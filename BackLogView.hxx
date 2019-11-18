@@ -1,26 +1,19 @@
 #ifndef BACKLOGVIEW_HXX
 #define BACKLOGVIEW_HXX
 
-#include <QTreeView>
-#include <QStyledItemDelegate>
+#include "TaskItem.hxx"
 
-class BackLogDelegate: public QStyledItemDelegate
-{
-  Q_OBJECT
+#include <QListWidget>
 
-public:
-  BackLogDelegate(QObject* p_parent = nullptr);
-
-  void paint(QPainter* p_painter, QStyleOptionViewItem const& p_option, QModelIndex const& p_index) const override;
-  QSize sizeHint(QStyleOptionViewItem const& p_option, QModelIndex const& p_index) const override;
-};
-
-class BackLogView: public QTreeView
+class BackLogView: public QListWidget
 {
   Q_OBJECT
 
 public:
   BackLogView(QWidget* p_parent = nullptr);
+
+  BackLogItem* AddItem(QString const& p_name, QStringList const& p_tags, QString const& p_epic, TaskStatus p_status = TaskStatus::eToDo, int p_priority = 0);
+
 };
 
 #endif

@@ -1,0 +1,35 @@
+[
+    {
+        "Description": "Mettre les textes sur la pages du chapitre 2\n- page 7\n- page 8\n- page 9",
+        "Epic": "On a mangé le Japon",
+        "Name": "Textes du chapitre 2",
+        "Status": 0,
+        "Tags": [
+            "dessin",
+            "bd",
+            "photoshop"
+        ],
+        "Priority": 1
+    },
+    {
+        "Description": "Vendre les BD suivante :\n- Album Spirou et Fantasio trop abimés\n- BD du père d'Elsa\n- Gros album de Spirou",
+        "Epic": "Vendre",
+        "Name": "Vendre des BD",
+        "Status": 2,
+        "Tags": [
+            "vente"
+        ],
+        "Priority": 3
+    },
+    {
+        "Description": "Peindre les plinthes du couloir et du salon :\n- Enlever les meubles du salon\n- Nettoyer les plinthes du salon\n- Peindre 5 couches",
+        "Epic": "Rénover la maison",
+        "Name": "Peindre les plinthes",
+        "Status": 0,
+        "Tags": [
+            "maison",
+            "peinture"
+        ],
+        "Priority": 2
+    }
+]

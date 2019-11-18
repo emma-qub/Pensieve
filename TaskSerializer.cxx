@@ -1,8 +1,8 @@
 #include "TaskSerializer.hxx"
 
-#include "KanbanModel.hxx"
-#include "BackLogModel.hxx"
 #include "TaskItem.hxx"
+#include "KanbanView.hxx"
+#include "BackLogView.hxx"
 
 #include <QFile>
 #include <QTextStream>
@@ -17,10 +17,10 @@
 
 
 
-TaskSerializer::TaskSerializer(BackLogModel* p_backLogModel, KanbanModel* p_kanbanModel, QObject* p_parent):
+TaskSerializer::TaskSerializer(KanbanView* p_kanbanView, BackLogView* p_backLogView, QObject* p_parent):
   QObject(p_parent),
-  m_kanbanModel(p_kanbanModel),
-  m_backLogModel(p_backLogModel)
+  m_kanbanView(p_kanbanView),
+  m_backLogView(p_backLogView)
 {
 }
 
@@ -32,17 +32,19 @@ void TaskSerializer::SetFileFromModel()
 
   if (taskFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
     QStringList rowsStringList;
-    for (int row = 0; row < m_kanbanModel->rowCount(); ++row) {
-      auto taskItem = m_kanbanModel->GetTaskItemFromIndex(m_kanbanModel->index(row, 0));
+    for (int row = 0; row < m_kanbanView->rowCount(); ++row) {
+      auto item = m_kanbanView->item(row, 0);
+      if (item->data(KanbanTaskItem::eTaskRole).toBool()) {
+        auto taskItem = static_cast<KanbanTaskItem*>(item);
+        jsonObject["Name"] = taskItem->GetName();
+        jsonObject["Description"] = taskItem->GetDescription();
+        jsonObject["Tags"] = QJsonArray::fromStringList(taskItem->GetTags());
+        jsonObject["Epic"] = taskItem->GetEpic();
+        jsonObject["Status"] = static_cast<int>(taskItem->GetStatus());
+        jsonObject["Priority"] = taskItem->GetPriority();
 
-      jsonObject["Name"] = taskItem->GetName();
-      jsonObject["Description"] = taskItem->GetDescription();
-      jsonObject["Tags"] = QJsonArray::fromStringList(taskItem->GetTags());
-      jsonObject["Epic"] = taskItem->GetEpic();
-      jsonObject["Status"] = taskItem->GetStatus();
-      jsonObject["Priority"] = taskItem->GetPriority();
-
-      jsonArray.append(jsonObject);
+        jsonArray.append(jsonObject);
+      }
     }
 
     QJsonDocument jsonDocument(jsonArray);
@@ -54,8 +56,10 @@ void TaskSerializer::SetFileFromModel()
   taskFile.close();
 }
 
-void TaskSerializer::SetModelFromFile()
-{
+void TaskSerializer::SetModelFromFile() {
+  m_kanbanView->clear();
+  m_backLogView->clear();
+
   QFile taskFile("../Pensieve/json/tasks.json");
 
   if (taskFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -65,20 +69,26 @@ void TaskSerializer::SetModelFromFile()
     for (int row = 0; row < array.size(); ++row) {
       auto jsonObject = array.at(row);
 
-      auto taskItem = new TaskItem(jsonObject["Name"].toString());
-      taskItem->SetDescription(jsonObject["Description"].toString());
       auto tagsArray = jsonObject["Tags"].toArray();
       QStringList tags;
       for (int rowTag = 0; rowTag < tagsArray.size(); ++rowTag) {
         tags << tagsArray.at(rowTag).toString();
       }
-      taskItem->SetTags(tags);
-      taskItem->SetEpic(jsonObject["Epic"].toString());
-      taskItem->SetStatus(static_cast<TaskItem::Status>(jsonObject["Status"].toInt()));
-      taskItem->SetPriority(jsonObject["Priority"].toInt());
 
-      m_kanbanModel->AppendTaskItem(taskItem);
-      m_backLogModel->AppendTaskItem(taskItem->clone());
+      m_kanbanView->AddItem(
+        jsonObject["Name"].toString(),
+        jsonObject["Description"].toString(),
+        tags,
+        jsonObject["Epic"].toString(),
+        static_cast<TaskStatus>(jsonObject["Status"].toInt()),
+        jsonObject["Priority"].toInt());
+
+      m_backLogView->AddItem(
+        jsonObject["Name"].toString(),
+        tags,
+        jsonObject["Epic"].toString(),
+        static_cast<TaskStatus>(jsonObject["Status"].toInt()),
+        jsonObject["Priority"].toInt());
     }
   }
 

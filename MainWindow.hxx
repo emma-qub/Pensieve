@@ -2,12 +2,14 @@
 #define MAINWINDOW_HXX
 
 #include <QMainWindow>
+#include <QMap>
 
 class KanbanView;
-class KanbanModel;
 class BackLogView;
-class BackLogModel;
-class BackLogProxyModel;
+class KanbanEpicItem;
+class QListWidgetItem;
+class QTableWidgetItem;
+class TaskSerializer;
 
 class MainWindow: public QMainWindow
 {
@@ -22,12 +24,14 @@ protected:
 
 private:
   KanbanView* m_kanbanView;
-  KanbanModel* m_kanbanModel;
   BackLogView* m_backLogView;
-  BackLogModel* m_backLogModel;
-  BackLogProxyModel* m_backLogProxyModel;
   QTabWidget* m_centralWidget;
 
   QAction* m_addTaskAction;
+
+  QMap<QListWidgetItem*, QTableWidgetItem*> m_listTableWidgetItemsList;
+  QMap<QTableWidgetItem*, QListWidgetItem*> m_tableListWidgetItemsList;
+
+  TaskSerializer* m_serializer;
 };
 #endif

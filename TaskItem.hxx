@@ -1,12 +1,50 @@
 #ifndef TASKITEM_HXX
 #define TASKITEM_HXX
 
-#include <QStandardItem>
+#include <QTableWidgetItem>
+#include <QListWidget>
+#include <QStyledItemDelegate>
 
-class TaskItem: public QStandardItem
-{
+enum class TaskStatus {
+  eToDo,
+  eInProgress,
+  ePause,
+  eDone,
+  eNone
+};
+
+class BackLogItem: public QListWidgetItem {
 public:
-  enum TaskDataRoles {
+  enum BackLogTaskDataRoles {
+    eNameRole = Qt::DisplayRole,
+    eTagsRole = Qt::UserRole,
+    eStatusRole,
+    eEpicRole,
+    ePriorityRole
+  };
+
+  BackLogItem(QString const& p_taskName);
+
+  QString GetName() const;
+  void SetName(QString const& p_name);
+
+  QStringList GetTags() const;
+  void SetTags(QStringList const& p_category);
+
+  TaskStatus GetStatus() const;
+  void SetStatus(TaskStatus p_status);
+
+  QString GetEpic() const;
+  void SetEpic(QString const& p_epic);
+
+  int GetPriority() const;
+  void SetPriority(int p_priority);
+
+};
+
+class KanbanEpicItem: public QTableWidgetItem {
+public:
+  enum KanbanTaskDataRoles {
     eNameRole = Qt::DisplayRole,
     eDescriptionRole = Qt::UserRole,
     eTagsRole,
@@ -15,16 +53,29 @@ public:
     ePriorityRole
   };
 
-  enum Status {
-    eToDo,
-    eInProgress,
-    ePause,
-    eDone,
-    eNone
+  enum EpicDataRoles {
+    eToDo
   };
 
-  TaskItem(QString const& p_taskName);
-  ~TaskItem() override;
+  KanbanEpicItem(QString const& p_taskName);
+};
+
+class KanbanTaskItem: public QTableWidgetItem
+{
+public:
+  enum KanbanTaskDataRoles {
+    eNameRole = Qt::DisplayRole,
+    eDescriptionRole = Qt::UserRole,
+    eTagsRole,
+    eStatusRole,
+    eEpicRole,
+    ePriorityRole,
+
+    eTaskRole = 0b10000000000
+  };
+
+  KanbanTaskItem(QString const& p_taskName);
+  ~KanbanTaskItem() override;
 
   QString GetName() const;
   void SetName(QString const& p_name);
@@ -35,8 +86,8 @@ public:
   QStringList GetTags() const;
   void SetTags(QStringList const& p_category);
 
-  Status GetStatus() const;
-  void SetStatus(Status p_status);
+  TaskStatus GetStatus() const;
+  void SetStatus(TaskStatus p_status);
 
   QString GetEpic() const;
   void SetEpic(QString const& p_epic);
@@ -48,10 +99,17 @@ public:
   void MoveToInProgress();
   void MoveToPause();
   void MoveToDone();
-
-  TaskItem* clone() const override;
 };
 
-Q_DECLARE_METATYPE(TaskItem::Status)
+class KanbanTaskItemDelegate: public QStyledItemDelegate {
+  Q_OBJECT
+
+public:
+  KanbanTaskItemDelegate(QObject* p_parent = nullptr);
+
+  QSize sizeHint(QStyleOptionViewItem const& p_option, QModelIndex const& p_index) const override;
+};
+
+Q_DECLARE_METATYPE(TaskStatus)
 
 #endif

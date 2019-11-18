@@ -3,20 +3,22 @@
 
 #include <QObject>
 
-class KanbanModel;
-class BackLogModel;
+class KanbanView;
+class BackLogView;
 
 class TaskSerializer: public QObject
 {
+  Q_OBJECT
+
 public:
-  TaskSerializer(BackLogModel* p_backLogModel = nullptr, KanbanModel* p_model = nullptr, QObject* p_parent = nullptr);
+  TaskSerializer(KanbanView* p_kanbanView, BackLogView* p_backLogView, QObject* p_parent = nullptr);
 
   void SetFileFromModel();
   void SetModelFromFile();
 
 private:
-  KanbanModel* m_kanbanModel;
-  BackLogModel* m_backLogModel;
+  KanbanView* m_kanbanView;
+  BackLogView* m_backLogView;
 };
 
 #endif
