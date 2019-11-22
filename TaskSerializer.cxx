@@ -4,28 +4,23 @@
 #include "KanbanView.hxx"
 #include "BackLogView.hxx"
 
-#include <QFile>
 #include <QTextStream>
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonValue>
-
-
-
-#include <QDebug>
-
-
+#include <QMessageBox>
 
 TaskSerializer::TaskSerializer(KanbanView* p_kanbanView, BackLogView* p_backLogView, QObject* p_parent):
   QObject(p_parent),
   m_kanbanView(p_kanbanView),
-  m_backLogView(p_backLogView)
-{
+  m_backLogView(p_backLogView) {
 }
 
-void TaskSerializer::SetFileFromModel()
-{
+void TaskSerializer::SetFileFromModel() {
+  auto copySucceded = Backup();
+  Q_ASSERT_X(copySucceded, "TaskSerializer::SetFileFromModel", "Backup failed");
+
   QJsonObject jsonObject;
   QJsonArray jsonArray;
   QFile taskFile("../Pensieve/json/tasks.json");
@@ -33,17 +28,21 @@ void TaskSerializer::SetFileFromModel()
   if (taskFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
     QStringList rowsStringList;
     for (int row = 0; row < m_kanbanView->rowCount(); ++row) {
-      auto item = m_kanbanView->item(row, 0);
-      if (item->data(KanbanTaskItem::eTaskRole).toBool()) {
-        auto taskItem = static_cast<KanbanTaskItem*>(item);
-        jsonObject["Name"] = taskItem->GetName();
-        jsonObject["Description"] = taskItem->GetDescription();
-        jsonObject["Tags"] = QJsonArray::fromStringList(taskItem->GetTags());
-        jsonObject["Epic"] = taskItem->GetEpic();
-        jsonObject["Status"] = static_cast<int>(taskItem->GetStatus());
-        jsonObject["Priority"] = taskItem->GetPriority();
+      for (int col = 0; col < m_kanbanView->columnCount(); ++col) {
+        auto item = m_kanbanView->item(row, col);
+        if (item) {
+          if (item->data(KanbanTaskItem::eTaskRole).toBool()) {
+            auto taskItem = static_cast<KanbanTaskItem*>(item);
+            jsonObject["Name"] = taskItem->GetName();
+            jsonObject["Description"] = taskItem->GetDescription();
+            jsonObject["Tags"] = QJsonArray::fromStringList(taskItem->GetTags());
+            jsonObject["Epic"] = taskItem->GetEpic();
+            jsonObject["Status"] = static_cast<int>(taskItem->GetStatus());
+            jsonObject["Priority"] = taskItem->GetPriority();
 
-        jsonArray.append(jsonObject);
+            jsonArray.append(jsonObject);
+          }
+        }
       }
     }
 
@@ -57,6 +56,9 @@ void TaskSerializer::SetFileFromModel()
 }
 
 void TaskSerializer::SetModelFromFile() {
+  auto copySucceded = Backup();
+  Q_ASSERT_X(copySucceded, "TaskSerializer::SetModelFromFile", "Backup failed");
+
   m_kanbanView->clear();
   m_backLogView->clear();
 
@@ -85,6 +87,7 @@ void TaskSerializer::SetModelFromFile() {
 
       m_backLogView->AddItem(
         jsonObject["Name"].toString(),
+        jsonObject["Description"].toString(),
         tags,
         jsonObject["Epic"].toString(),
         static_cast<TaskStatus>(jsonObject["Status"].toInt()),
@@ -93,4 +96,17 @@ void TaskSerializer::SetModelFromFile() {
   }
 
   taskFile.close();
+}
+
+bool TaskSerializer::Backup() const {
+  QFile taskFile("../Pensieve/json/tasks.json");
+  auto bakName = taskFile.fileName()+".bak";
+  if (QFile::exists(bakName))
+    QFile::remove(bakName);
+  auto copySucceeded = taskFile.copy(bakName);
+  if (!copySucceeded) {
+    QMessageBox::warning(m_kanbanView, tr("Backup copy failed"), tr("Task file copy backup failed.\nPlease reload the program and fingers crossed your data is not lost."));
+  }
+
+  return copySucceeded;
 }

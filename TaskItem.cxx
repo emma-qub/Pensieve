@@ -13,6 +13,14 @@ void BackLogItem::SetName(QString const& p_name) {
   setText(p_name);
 }
 
+QString BackLogItem::GetDescription() const {
+  return data(eDescriptionRole).toString();
+}
+
+void BackLogItem::SetDescription(QString const& p_description) {
+  setData(eDescriptionRole, p_description);
+}
+
 QStringList BackLogItem::GetTags() const {
   return data(eTagsRole).toStringList();
 }
@@ -26,7 +34,7 @@ TaskStatus BackLogItem::GetStatus() const {
 }
 
 void BackLogItem::SetStatus(TaskStatus p_status) {
-  setData(eStatusRole, QVariant::fromValue<TaskStatus>(p_status));
+  setData(eStatusRole, static_cast<int>(p_status));
 }
 
 QString BackLogItem::GetEpic() const {
@@ -89,7 +97,7 @@ TaskStatus KanbanTaskItem::GetStatus() const {
 }
 
 void KanbanTaskItem::SetStatus(TaskStatus p_status) {
-  setData(eStatusRole, QVariant::fromValue<TaskStatus>(p_status));
+  setData(eStatusRole, static_cast<int>(p_status));
 }
 
 QString KanbanTaskItem::GetEpic() const {
@@ -122,19 +130,4 @@ void KanbanTaskItem::MoveToPause() {
 
 void KanbanTaskItem::MoveToDone() {
   SetStatus(TaskStatus::eDone);
-}
-
-
-
-KanbanTaskItemDelegate::KanbanTaskItemDelegate(QObject* p_parent):
-  QStyledItemDelegate(p_parent) {
-}
-
-QSize KanbanTaskItemDelegate::sizeHint(QStyleOptionViewItem const& p_option, QModelIndex const& p_index) const {
-  auto normalSizeHint = QStyledItemDelegate::sizeHint(p_option, p_index);
-
-  if (p_index.data(KanbanTaskItem::eTaskRole).toBool())
-    return QSize(normalSizeHint.width(), 300);
-
-  return normalSizeHint;
 }

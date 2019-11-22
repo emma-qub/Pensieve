@@ -21,6 +21,8 @@ public:
 
 protected:
   void AddNewTask();
+  void SynchronizeItemsFromKanban();
+  void SynchronizeItemsFromBackLog();
 
 private:
   KanbanView* m_kanbanView;

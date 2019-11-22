@@ -1,6 +1,7 @@
 #ifndef TASKSERIALIZER_HXX
 #define TASKSERIALIZER_HXX
 
+#include <QFile>
 #include <QObject>
 
 class KanbanView;
@@ -15,6 +16,9 @@ public:
 
   void SetFileFromModel();
   void SetModelFromFile();
+
+protected:
+  bool Backup() const;
 
 private:
   KanbanView* m_kanbanView;

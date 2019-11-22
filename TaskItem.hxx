@@ -17,7 +17,8 @@ class BackLogItem: public QListWidgetItem {
 public:
   enum BackLogTaskDataRoles {
     eNameRole = Qt::DisplayRole,
-    eTagsRole = Qt::UserRole,
+    eDescriptionRole = Qt::UserRole,
+    eTagsRole,
     eStatusRole,
     eEpicRole,
     ePriorityRole
@@ -27,6 +28,9 @@ public:
 
   QString GetName() const;
   void SetName(QString const& p_name);
+
+  QString GetDescription() const;
+  void SetDescription(QString const& p_description);
 
   QStringList GetTags() const;
   void SetTags(QStringList const& p_category);
@@ -99,15 +103,6 @@ public:
   void MoveToInProgress();
   void MoveToPause();
   void MoveToDone();
-};
-
-class KanbanTaskItemDelegate: public QStyledItemDelegate {
-  Q_OBJECT
-
-public:
-  KanbanTaskItemDelegate(QObject* p_parent = nullptr);
-
-  QSize sizeHint(QStyleOptionViewItem const& p_option, QModelIndex const& p_index) const override;
 };
 
 Q_DECLARE_METATYPE(TaskStatus)
