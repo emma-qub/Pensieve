@@ -44,24 +44,16 @@ public:
   int GetPriority() const;
   void SetPriority(int p_priority);
 
+  bool operator<(QListWidgetItem const& p_other) const override;
 };
 
 class KanbanEpicItem: public QTableWidgetItem {
 public:
-  enum KanbanTaskDataRoles {
-    eNameRole = Qt::DisplayRole,
-    eDescriptionRole = Qt::UserRole,
-    eTagsRole,
-    eStatusRole,
-    eEpicRole,
-    ePriorityRole
-  };
-
   enum EpicDataRoles {
     eToDo
   };
 
-  KanbanEpicItem(QString const& p_taskName);
+  KanbanEpicItem(QString const& p_epicName);
 };
 
 class KanbanTaskItem: public QTableWidgetItem
@@ -104,6 +96,8 @@ public:
   void MoveToPause();
   void MoveToDone();
 };
+
+QColor GetEpicColor(QString const& p_epic);
 
 Q_DECLARE_METATYPE(TaskStatus)
 

@@ -1,8 +1,15 @@
 #include "BackLogView.hxx"
 
 BackLogView::BackLogView(QWidget* p_parent):
-  QListWidget(p_parent)
-{
+  QListWidget(p_parent) {
+
+  setEditTriggers(QTableWidget::NoEditTriggers);
+  setSelectionMode(QAbstractItemView::SingleSelection);
+  setDragEnabled(true);
+  viewport()->setAcceptDrops(true);
+  setDropIndicatorShown(true);
+  setDragDropMode(QAbstractItemView::InternalMove);
+
   //setItemDelegate(new BackLogDelegate);
 }
 
@@ -15,6 +22,8 @@ BackLogItem* BackLogView::AddItem(QString const& p_name, QString const& p_descri
   item->SetPriority(p_priority);
 
   insertItem(0, item);
+
+  sortItems();
 
   return item;
 }

@@ -1,5 +1,7 @@
 #include "TaskItem.hxx"
 
+#include <iomanip>
+
 
 BackLogItem::BackLogItem(const QString& p_taskName):
   QListWidgetItem(p_taskName) {
@@ -43,6 +45,7 @@ QString BackLogItem::GetEpic() const {
 
 void BackLogItem::SetEpic(const QString& p_epic) {
   setData(eEpicRole, p_epic);
+  setData(Qt::DecorationRole, GetEpicColor(p_epic));
 }
 
 int BackLogItem::GetPriority() const {
@@ -53,11 +56,20 @@ void BackLogItem::SetPriority(int p_priority) {
   setData(ePriorityRole, p_priority);
 }
 
+bool BackLogItem::operator<(const QListWidgetItem& p_other) const {
+  auto const& backLogItem = dynamic_cast<BackLogItem const*>(&p_other);
+  Q_ASSERT_X(backLogItem, "BackLogItem::operator<", "Comparizon between a BackLogItem and another QListWidgetItem.");
 
-
-KanbanEpicItem::KanbanEpicItem(QString const& p_taskName):
-  QTableWidgetItem(p_taskName) {
+  return GetPriority() < backLogItem->GetPriority();
 }
+
+
+
+KanbanEpicItem::KanbanEpicItem(QString const& p_epicName):
+  QTableWidgetItem(p_epicName) {
+  setData(Qt::DecorationRole, GetEpicColor(p_epicName));
+}
+
 
 
 KanbanTaskItem::KanbanTaskItem(QString const& p_taskName):
@@ -106,6 +118,7 @@ QString KanbanTaskItem::GetEpic() const {
 
 void KanbanTaskItem::SetEpic(const QString& p_epic) {
   setData(eEpicRole, p_epic);
+  setData(Qt::DecorationRole, GetEpicColor(p_epic));
 }
 
 int KanbanTaskItem::GetPriority() const {
@@ -130,4 +143,31 @@ void KanbanTaskItem::MoveToPause() {
 
 void KanbanTaskItem::MoveToDone() {
   SetStatus(TaskStatus::eDone);
+}
+
+
+
+QColor GetEpicColor(QString const& p_epic) {
+  auto colorInt = qHash(p_epic);
+  std::stringstream stream;
+  stream << std::hex << colorInt;
+  auto colorString = QString::fromStdString(stream.str());
+
+  colorString = colorString.rightJustified(6, '0');
+  colorString.truncate(6);
+  QColor color(QString("#%1").arg(colorString));
+
+  int c[3] = {color.red(), color.green(), color.blue()};
+  int s = 64;
+
+  int nearestC[3];
+  for (int i = 0; i < 3; ++i) {
+    auto cMin = (c[i] / s) * s;
+    auto cMax = cMin + s - 1;
+    std::abs(c[i] - cMin) < std::abs(c[i] - cMax)?
+      nearestC[i] = cMin:
+      nearestC[i] = cMax;
+  }
+
+  return QColor(nearestC[0], nearestC[1], nearestC[2]);
 }
