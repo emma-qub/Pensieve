@@ -13,7 +13,7 @@ class NewTaskDialog: public QDialog
   Q_OBJECT
 
 public:
-  NewTaskDialog(QWidget* p_parent = nullptr);
+  NewTaskDialog(QStringList const& p_epics, QWidget* p_parent = nullptr);
   ~NewTaskDialog() override;
 
   QString GetName() const;

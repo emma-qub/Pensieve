@@ -31,10 +31,13 @@ MainWindow::MainWindow(QWidget* p_parent):
 
   setCentralWidget(m_centralWidget);
 
-  //connect(m_kanbanView, &KanbanView::itemChanged, this, &MainWindow::SynchronizeItemsFromKanban);
-  connect(m_kanbanView, &KanbanView::itemChanged, m_serializer, &TaskSerializer::SetFileFromModel);
-  //connect(m_backLogView, &BackLogView::itemChanged, this, &MainWindow::SynchronizeItemsFromBackLog);
-  //connect(m_backLogView, &BackLogView::itemChanged, m_serializer, &TaskSerializer::SetFileFromModel);
+  ConnectSync();
+  connect(m_backLogView, &BackLogView::rowMovedBegin, this, &MainWindow::DisconnectSync);
+  connect(m_backLogView, &BackLogView::rowMovedEnd, this, [this]() {
+    ConnectSync();
+    SynchronizeItemsFromBackLog();
+    m_serializer->SetFileFromModel();
+  });
 
   showMaximized();
 }
@@ -42,49 +45,43 @@ MainWindow::MainWindow(QWidget* p_parent):
 MainWindow::~MainWindow() = default;
 
 void MainWindow::AddNewTask() {
-  auto dialog = new NewTaskDialog(this);
+  auto dialog = new NewTaskDialog(m_kanbanView->GetEpicsList(), this);
   if (dialog->exec() == QDialog::Accepted) {
     // Kanban
-    auto tableWidgetItem = m_kanbanView->AddItem(dialog->GetName(), dialog->GetDescription(), dialog->GetTags(), dialog->GetEpic());
+    /*auto tableWidgetItem = */m_kanbanView->AddItem(dialog->GetName(), dialog->GetDescription(), dialog->GetTags(), dialog->GetEpic());
     // BackLog
-    auto listWidgetItem = m_backLogView->AddItem(dialog->GetName(), dialog->GetDescription(), dialog->GetTags(), dialog->GetEpic());
+    /*auto listWidgetItem = */m_backLogView->AddItem(dialog->GetName(), dialog->GetDescription(), dialog->GetTags(), dialog->GetEpic());
 
-    m_listTableWidgetItemsList[listWidgetItem] = tableWidgetItem;
-    m_tableListWidgetItemsList[tableWidgetItem] = listWidgetItem;
+    /// NOT HANDLE YET
+    ///m_listTableWidgetItemsList[listWidgetItem] = tableWidgetItem;
+    ///m_tableListWidgetItemsList[tableWidgetItem] = listWidgetItem;
+
+    m_serializer->SetFileFromModel();
   }
 }
 
 void MainWindow::SynchronizeItemsFromKanban() {
-  disconnect(m_kanbanView, &KanbanView::itemChanged, this, &MainWindow::SynchronizeItemsFromKanban);
-  disconnect(m_kanbanView, &KanbanView::itemChanged, m_serializer, &TaskSerializer::SetFileFromModel);
-  disconnect(m_backLogView, &BackLogView::itemChanged, this, &MainWindow::SynchronizeItemsFromBackLog);
-  disconnect(m_backLogView, &BackLogView::itemChanged, m_serializer, &TaskSerializer::SetFileFromModel);
+  DisconnectSync();
 
   m_backLogView->clear();
   for (int row = 0; row < m_kanbanView->rowCount(); ++row) {
     for (int col = 0; col < m_kanbanView->columnCount(); ++col) {
       auto const* item = m_kanbanView->item(row, col);
-      if (item && item->data(KanbanTaskItem::eTaskRole).toBool()) {
+      if (item && item->data(KanbanTaskItem::eIsTaskRole).toBool()) {
         auto const* taskItem = static_cast<KanbanTaskItem const*>(item);
         m_backLogView->AddItem(taskItem->GetName(), taskItem->GetDescription(), taskItem->GetTags(), taskItem->GetEpic(), taskItem->GetStatus(), taskItem->GetPriority());
       }
     }
   }
 
-  connect(m_kanbanView, &KanbanView::itemChanged, this, &MainWindow::SynchronizeItemsFromKanban);
-  connect(m_kanbanView, &KanbanView::itemChanged, m_serializer, &TaskSerializer::SetFileFromModel);
-  connect(m_backLogView, &BackLogView::itemChanged, this, &MainWindow::SynchronizeItemsFromBackLog);
-  connect(m_backLogView, &BackLogView::itemChanged, m_serializer, &TaskSerializer::SetFileFromModel);
+  ConnectSync();
 }
 
 void MainWindow::SynchronizeItemsFromBackLog() {
-  disconnect(m_kanbanView, &KanbanView::itemChanged, this, &MainWindow::SynchronizeItemsFromKanban);
-  disconnect(m_kanbanView, &KanbanView::itemChanged, m_serializer, &TaskSerializer::SetFileFromModel);
-  disconnect(m_backLogView, &BackLogView::itemChanged, this, &MainWindow::SynchronizeItemsFromBackLog);
-  disconnect(m_backLogView, &BackLogView::itemChanged, m_serializer, &TaskSerializer::SetFileFromModel);
+  DisconnectSync();
 
-  m_kanbanView->clear();
-  for (int row = 0; row < m_kanbanView->rowCount(); ++row) {
+  m_kanbanView->Clear();
+  for (int row = 0; row < m_backLogView->count(); ++row) {
     auto const* item = m_backLogView->item(row);
     if (item) {
       auto const* taskItem = static_cast<BackLogItem const*>(item);
@@ -92,8 +89,19 @@ void MainWindow::SynchronizeItemsFromBackLog() {
     }
   }
 
+  ConnectSync();
+}
+
+void MainWindow::ConnectSync() {
   connect(m_kanbanView, &KanbanView::itemChanged, this, &MainWindow::SynchronizeItemsFromKanban);
   connect(m_kanbanView, &KanbanView::itemChanged, m_serializer, &TaskSerializer::SetFileFromModel);
   connect(m_backLogView, &BackLogView::itemChanged, this, &MainWindow::SynchronizeItemsFromBackLog);
   connect(m_backLogView, &BackLogView::itemChanged, m_serializer, &TaskSerializer::SetFileFromModel);
+}
+
+void MainWindow::DisconnectSync() {
+  disconnect(m_kanbanView, &KanbanView::itemChanged, this, &MainWindow::SynchronizeItemsFromKanban);
+  disconnect(m_kanbanView, &KanbanView::itemChanged, m_serializer, &TaskSerializer::SetFileFromModel);
+  disconnect(m_backLogView, &BackLogView::itemChanged, this, &MainWindow::SynchronizeItemsFromBackLog);
+  disconnect(m_backLogView, &BackLogView::itemChanged, m_serializer, &TaskSerializer::SetFileFromModel);
 }

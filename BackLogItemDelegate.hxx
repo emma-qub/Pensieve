@@ -1,10 +1,10 @@
 #ifndef BACKLOGITEMDELEGATE_HXX
 #define BACKLOGITEMDELEGATE_HXX
 
-#include <QStyledItemDelegate>
+#include <QItemDelegate>
 
 
-class BackLogItemDelegate: public QStyledItemDelegate
+class BackLogItemDelegate: public QItemDelegate
 {
   Q_OBJECT
 

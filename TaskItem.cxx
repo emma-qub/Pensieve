@@ -56,6 +56,10 @@ void BackLogItem::SetPriority(int p_priority) {
   setData(ePriorityRole, p_priority);
 }
 
+void BackLogItem::ShiftPriority(int p_delta) {
+  SetPriority(GetPriority() + p_delta);
+}
+
 bool BackLogItem::operator<(const QListWidgetItem& p_other) const {
   auto const& backLogItem = dynamic_cast<BackLogItem const*>(&p_other);
   Q_ASSERT_X(backLogItem, "BackLogItem::operator<", "Comparizon between a BackLogItem and another QListWidgetItem.");
@@ -68,6 +72,27 @@ bool BackLogItem::operator<(const QListWidgetItem& p_other) const {
 KanbanEpicItem::KanbanEpicItem(QString const& p_epicName):
   QTableWidgetItem(p_epicName) {
   setData(Qt::DecorationRole, GetEpicColor(p_epicName));
+  setData(eExpandedRole, true);
+}
+
+bool KanbanEpicItem::IsExpanded() const {
+  return data(eExpandedRole).toBool();
+}
+
+void KanbanEpicItem::Expand() {
+  SetExpanded(true);
+}
+
+void KanbanEpicItem::Collapse() {
+  SetExpanded(false);
+}
+
+void KanbanEpicItem::SetExpanded(bool p_expand) {
+  setData(eExpandedRole, p_expand);
+}
+
+void KanbanEpicItem::ToggleExpand() {
+  SetExpanded(!IsExpanded());
 }
 
 
@@ -75,7 +100,7 @@ KanbanEpicItem::KanbanEpicItem(QString const& p_epicName):
 KanbanTaskItem::KanbanTaskItem(QString const& p_taskName):
   QTableWidgetItem(p_taskName) {
 
-  setData(eTaskRole, true);
+  setData(eIsTaskRole, true);
 }
 
 KanbanTaskItem::~KanbanTaskItem() = default;

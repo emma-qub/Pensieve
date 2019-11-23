@@ -1,35 +1,84 @@
 [
     {
-        "Description": "Mettre les textes sur la pages du chapitre 2\n- page 7\n- page 8\n- page 9",
-        "Epic": "On a mangé le Japon",
-        "Name": "Textes du chapitre 2",
-        "Priority": 1,
+        "Description": "Peindre les plinthes du couloir et du salon :\n- Enlever les meubles du salon\n- Nettoyer les plinthes du salon\n- Peindre 5 couches",
+        "Epic": "Rénover la maison",
+        "Name": "Peindre les plinthes",
+        "Priority": 8,
         "Status": 2,
         "Tags": [
-            "dessin",
-            "bd",
-            "photoshop"
+            "maison",
+            "peinture"
+        ]
+    },
+    {
+        "Description": "- Nettoyer le sol\n- Mettre le scotch\n- Passer 3 couches de peinture",
+        "Epic": "Rénover la maison",
+        "Name": "Peindre le sol du coin lecture",
+        "Priority": 1,
+        "Status": 1,
+        "Tags": [
+            "peinture",
+            "travaux"
+        ]
+    },
+    {
+        "Description": "- Finir l'illustration du Mandarake (couleur)\n- Scanner l'illustration\n- Mettre l'illustration en niveaux de gris\n- Imprimer aux bonnes dimensions\n- Coller l'illustration sur la page\n",
+        "Epic": "On a mangé le Japon",
+        "Name": "Finir le chapitre 4 page 9",
+        "Priority": 3,
+        "Status": 0,
+        "Tags": [
+            ""
+        ]
+    },
+    {
+        "Description": "",
+        "Epic": "On a mangé le Japon",
+        "Name": "Finir Chapitre 3 Page 1",
+        "Priority": 2,
+        "Status": 0,
+        "Tags": [
+            "bd"
+        ]
+    },
+    {
+        "Description": "",
+        "Epic": "Jeux vidéo (jouer)",
+        "Name": "Jouer à Luigi's Mansion 3",
+        "Priority": 6,
+        "Status": 0,
+        "Tags": [
+            ""
+        ]
+    },
+    {
+        "Description": "",
+        "Epic": "Jeux vidéo (jouer)",
+        "Name": "Jouer à Luigi's Mansion 2",
+        "Priority": 5,
+        "Status": 0,
+        "Tags": [
+            ""
+        ]
+    },
+    {
+        "Description": "",
+        "Epic": "Jeux vidéo (jouer)",
+        "Name": "Jouer à Luigi's Mansion",
+        "Priority": 4,
+        "Status": 1,
+        "Tags": [
+            ""
         ]
     },
     {
         "Description": "Vendre les BD suivante :\n- Album Spirou et Fantasio trop abimés\n- BD du père d'Elsa\n- Gros album de Spirou",
         "Epic": "Vendre",
         "Name": "Vendre des BD",
-        "Priority": 3,
+        "Priority": 7,
         "Status": 0,
         "Tags": [
             "vente"
-        ]
-    },
-    {
-        "Description": "Peindre les plinthes du couloir et du salon :\n- Enlever les meubles du salon\n- Nettoyer les plinthes du salon\n- Peindre 5 couches",
-        "Epic": "Rénover la maison",
-        "Name": "Peindre les plinthes",
-        "Priority": 2,
-        "Status": 2,
-        "Tags": [
-            "maison",
-            "peinture"
         ]
     }
 ]

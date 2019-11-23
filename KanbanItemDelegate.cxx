@@ -17,7 +17,7 @@ void KanbanItemDelegate::paint(QPainter* p_painter, const QStyleOptionViewItem& 
 
   QItemDelegate::drawBackground(p_painter, option, p_index);
 
-  if (p_index.data(KanbanTaskItem::eTaskRole).toBool()) {
+  if (p_index.data(KanbanTaskItem::eIsTaskRole).toBool()) {
     p_painter->setRenderHint(QPainter::Antialiasing);
 
     auto formerColor = p_painter->pen().color();
@@ -64,27 +64,67 @@ void KanbanItemDelegate::paint(QPainter* p_painter, const QStyleOptionViewItem& 
     p_painter->setFont(formerFont);
 
     // Draw description
-    auto descriptionRectangle = p_option.rect.adjusted(25, 10 + 20 + titleRect.height(), -20, -50);
+    auto descriptionRectangle = p_option.rect.adjusted(25, 10 + 20 + titleRect.height(), -20, -70);
     auto descriptionText = p_index.data(KanbanTaskItem::eDescriptionRole).toString();
     p_painter->drawText(descriptionRectangle, Qt::AlignTop | Qt::AlignLeft, descriptionText);
+
+    // Draw priority
+    auto priorityRect = p_option.rect.adjusted(25, 10+20+titleRect.height()+descriptionRectangle.height()+5, -20, -45);
+    auto priority = QString("#%1").arg(p_index.data(KanbanTaskItem::ePriorityRole).toInt());
+    p_painter->drawText(priorityRect, Qt::AlignVCenter | Qt::AlignLeft, priority);
 
     // Draw epic
     auto fm = option.fontMetrics;
     auto epicName = p_index.data(KanbanTaskItem::eEpicRole).toString();
     auto epicBoundingRect = fm.boundingRect(epicName);
-    auto epicRect = p_option.rect.adjusted(25, 10+20+titleRect.height()+descriptionRectangle.height()+10, -cardRect.width()+20+epicBoundingRect.width(), -20);
+    auto epicRect = p_option.rect.adjusted(25, 10+20+titleRect.height()+descriptionRectangle.height()+30, -cardRect.width()+20+epicBoundingRect.width(), -20);
     auto epicColor = p_index.data(Qt::DecorationRole).value<QColor>();
     p_painter->setPen(Qt::NoPen);
     p_painter->setBrush(epicColor);
     p_painter->drawRoundedRect(epicRect, 4, 4);
     p_painter->setBrush(Qt::NoBrush);
-    (epicColor.toHsv().value() < 127)?
+    (epicColor.toHsv().value() <= 127)?
       p_painter->setPen(Qt::white):
       p_painter->setPen(formerColor);
-    p_painter->drawText(epicRect, Qt::AlignCenter, p_index.data(KanbanTaskItem::eEpicRole).toString());
+    p_painter->drawText(epicRect, Qt::AlignCenter, epicName);
 
   } else {
-    auto textRect = p_option.rect.adjusted(5, 0, 0, 0);
+    auto formerColor = p_painter->pen().color();
+
+    // Draw background
+    auto epicColor = p_index.data(Qt::DecorationRole).value<QColor>();
+    if (epicColor.isValid())
+      p_painter->fillRect(p_option.rect, epicColor);
+
+    // Draw expand symbole
+    auto expandBR = p_option.rect.adjusted(7, p_option.rect.height()/2-5, -p_option.rect.width()+7+10, -p_option.rect.height()/2+5);
+    QPoint A, B, C;
+    A = expandBR.topLeft();
+    if (p_index.data(KanbanEpicItem::eExpandedRole).toBool()) {
+      B = expandBR.center();
+      B.setY(B.y()+expandBR.height()/2);
+      C = expandBR.topRight();
+    } else {
+      B = expandBR.center();
+      B.setX(B.x()+expandBR.width()/2);
+      C = expandBR.bottomLeft();
+    }
+    QPainterPath path;
+    path.moveTo(A);
+    path.lineTo(B);
+    path.lineTo(C);
+    p_painter->setBrush(Qt::NoBrush);
+    QPen pen(formerColor, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    if (epicColor.toHsv().value() <= 127)
+      pen.setColor(Qt::white);
+    p_painter->setPen(pen);
+    p_painter->drawPath(path);
+
+    // Draw epic name
+    auto font = p_painter->font();
+    auto textRect = p_option.rect.adjusted(25, 0, 0, 0);
+    font.setBold(true);
+    p_painter->setFont(font);
     p_painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, p_index.data().toString());
   }
 
@@ -94,8 +134,8 @@ void KanbanItemDelegate::paint(QPainter* p_painter, const QStyleOptionViewItem& 
 QSize KanbanItemDelegate::sizeHint(QStyleOptionViewItem const& p_option, QModelIndex const& p_index) const {
   auto normalSizeHint = QItemDelegate::sizeHint(p_option, p_index);
 
-  if (p_index.data(KanbanTaskItem::eTaskRole).toBool())
+  if (p_index.data(KanbanTaskItem::eIsTaskRole).toBool())
     return QSize(normalSizeHint.width(), 300);
-
-  return normalSizeHint;
+  else
+    return QSize(normalSizeHint.width(), 40);
 }

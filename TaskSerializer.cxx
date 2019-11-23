@@ -29,10 +29,10 @@ void TaskSerializer::SetFileFromModel() {
     QStringList rowsStringList;
     for (int row = 0; row < m_kanbanView->rowCount(); ++row) {
       for (int col = 0; col < m_kanbanView->columnCount(); ++col) {
-        auto item = m_kanbanView->item(row, col);
+        auto const* item = m_kanbanView->item(row, col);
         if (item) {
-          if (item->data(KanbanTaskItem::eTaskRole).toBool()) {
-            auto taskItem = static_cast<KanbanTaskItem*>(item);
+          if (item->data(KanbanTaskItem::eIsTaskRole).toBool()) {
+            auto const* taskItem = static_cast<KanbanTaskItem const*>(item);
             jsonObject["Name"] = taskItem->GetName();
             jsonObject["Description"] = taskItem->GetDescription();
             jsonObject["Tags"] = QJsonArray::fromStringList(taskItem->GetTags());
@@ -59,7 +59,7 @@ void TaskSerializer::SetModelFromFile() {
   auto copySucceded = Backup();
   Q_ASSERT_X(copySucceded, "TaskSerializer::SetModelFromFile", "Backup failed");
 
-  m_kanbanView->clear();
+  m_kanbanView->Clear();
   m_backLogView->clear();
 
   QFile taskFile("../Pensieve/json/tasks.json");

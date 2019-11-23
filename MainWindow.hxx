@@ -23,6 +23,8 @@ protected:
   void AddNewTask();
   void SynchronizeItemsFromKanban();
   void SynchronizeItemsFromBackLog();
+  void ConnectSync();
+  void DisconnectSync();
 
 private:
   KanbanView* m_kanbanView;

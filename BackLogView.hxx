@@ -12,8 +12,15 @@ class BackLogView: public QListWidget
 public:
   BackLogView(QWidget* p_parent = nullptr);
 
-  BackLogItem* AddItem(QString const& p_name, QString const& p_description, QStringList const& p_tags, QString const& p_epic, TaskStatus p_status = TaskStatus::eToDo, int p_priority = 0);
+  BackLogItem* AddItem(QString const& p_name, QString const& p_description, QStringList const& p_tags,
+    QString const& p_epic, TaskStatus p_status = TaskStatus::eToDo, int p_priority = 0);
 
+Q_SIGNALS:
+  void rowMovedBegin();
+  void rowMovedEnd();
+
+protected:
+  void dropEvent(QDropEvent* p_event) override;
 };
 
 #endif

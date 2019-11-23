@@ -8,7 +8,7 @@
 #include <QGroupBox>
 #include <QDialogButtonBox>
 
-NewTaskDialog::NewTaskDialog(QWidget* p_parent):
+NewTaskDialog::NewTaskDialog(const QStringList& p_epics, QWidget* p_parent):
   QDialog(p_parent),
   m_nameLineEdit(new QLineEdit),
   m_descriptionTextEdit(new QTextEdit),
@@ -30,6 +30,7 @@ NewTaskDialog::NewTaskDialog(QWidget* p_parent):
   auto epicLayout = new QFormLayout;
   epicLayout->addRow(tr("Epic"), m_epicComboBox);
   m_epicComboBox->setEditable(true);
+  m_epicComboBox->addItems(p_epics);
 
   m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
   connect(m_buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);

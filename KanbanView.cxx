@@ -6,9 +6,6 @@
 #include <QHeaderView>
 #include <QDropEvent>
 
-
-#include <QDebug>
-
 KanbanView::KanbanView(QWidget* p_parent):
   QTableWidget(p_parent),
   m_formerRow(-1) {
@@ -57,6 +54,16 @@ KanbanTaskItem* KanbanView::AddItem(QString const& p_name, QString const& p_desc
   return item;
 }
 
+void KanbanView::Clear() {
+  QTableWidget::clearContents();
+  setRowCount(0);
+  m_kanbanEpicMap.clear();
+}
+
+QStringList KanbanView::GetEpicsList() const {
+  return m_kanbanEpicMap.keys();
+}
+
 void KanbanView::dropEvent(QDropEvent* p_event) {
   if (rowAt(p_event->pos().y()) != m_formerRow) {
     p_event->setAccepted(false);
@@ -79,4 +86,28 @@ void KanbanView::dragMoveEvent(QDragMoveEvent* p_event) {
   if (rowAt(p_event->pos().y()) != m_formerRow) {
     p_event->setAccepted(false);
   }
+}
+
+void KanbanView::mouseDoubleClickEvent(QMouseEvent* p_event) {
+  if (p_event->button() == Qt::LeftButton) {
+    auto itemDClicked = itemAt(p_event->pos());
+    if (itemDClicked && !itemDClicked->data(KanbanTaskItem::eEpicRole).toBool()) {
+      auto epicItem = static_cast<KanbanEpicItem*>(itemDClicked);
+      epicItem->ToggleExpand();
+      auto expanded = epicItem->IsExpanded();
+      for (int r = 0; r < rowCount(); ++r) {
+        for (int c = 0; c < columnCount(); ++c) {
+          auto currItem = item(r, c);
+          if (currItem && currItem->data(KanbanTaskItem::eEpicRole).toBool()) {
+            auto taskItem = static_cast<KanbanTaskItem*>(currItem);
+            if (taskItem->GetEpic() == epicItem->text()) {
+              setRowHidden(r, !expanded);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  QTableWidget::mouseDoubleClickEvent(p_event);
 }

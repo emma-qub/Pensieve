@@ -1,13 +1,54 @@
 #include "BackLogItemDelegate.hxx"
 
+#include "TaskItem.hxx"
+
 #include <QPaintEvent>
 #include <QPainter>
 
 BackLogItemDelegate::BackLogItemDelegate(QObject* p_parent):
-  QStyledItemDelegate(p_parent)
-{
+  QItemDelegate(p_parent) {
 }
 
+void BackLogItemDelegate::paint(QPainter* p_painter, const QStyleOptionViewItem& p_option, const QModelIndex& p_index) const {
+
+  p_painter->save();
+
+  QStyleOptionViewItem option = setOptions(p_index, p_option);
+  p_painter->setFont(option.font);
+
+  QItemDelegate::drawBackground(p_painter, option, p_index);
+
+  p_painter->setRenderHint(QPainter::Antialiasing);
+  auto fm = option.fontMetrics;
+  auto formerFont = p_painter->font();
+  auto formerColor = p_painter->pen().color();
+
+  // Draw title
+  auto titleText = p_index.data(BackLogItem::eNameRole).toString();
+  auto titleBoundingRect = fm.boundingRect(titleText);
+  auto titleRect = p_option.rect.adjusted(10, 0, -p_option.rect.width()+titleBoundingRect.width()+10, 0);
+  auto titleFont = formerFont;
+  titleFont.setBold(true);
+  p_painter->setFont(titleFont);
+  p_painter->drawText(titleRect, Qt::AlignCenter, titleText);
+  p_painter->setFont(formerFont);
+
+  // Draw epic
+  auto epicName = p_index.data(KanbanTaskItem::eEpicRole).toString();
+  auto epicBoundingRect = fm.boundingRect(epicName);
+  auto epicRect = p_option.rect.adjusted(10+titleRect.width()+5, 3, -p_option.rect.width()+epicBoundingRect.width()+10+titleRect.width()+5+20, -3);
+  auto epicColor = p_index.data(Qt::DecorationRole).value<QColor>();
+  p_painter->setPen(Qt::NoPen);
+  p_painter->setBrush(epicColor);
+  p_painter->drawRoundedRect(epicRect, 4, 4);
+  p_painter->setBrush(Qt::NoBrush);
+  (epicColor.toHsv().value() <= 127)?
+    p_painter->setPen(Qt::white):
+    p_painter->setPen(formerColor);
+  p_painter->drawText(epicRect, Qt::AlignCenter, epicName);
+
+  p_painter->restore();
+}
 /*
 void FindResultItemDelegate::paint(QPainter* p_painter, QStyleOptionViewItem const& p_option,
   QModelIndex const& p_index) const
@@ -165,56 +206,6 @@ void FindResultItemDelegate::DrawLineText(QPainter* p_painter, QStyleOptionViewI
 }
  */
 
-void BackLogItemDelegate::paint(QPainter* p_painter, const QStyleOptionViewItem& p_option, const QModelIndex& p_index) const
-{
-  return QStyledItemDelegate::paint(p_painter, p_option, p_index);
-
-//  if (taskItem) {
-//    auto font = p_painter->font();
-//    font.setBold(true);
-//    p_painter->setFont(font);
-//    auto fontMetrics = p_painter->fontMetrics();
-//    auto itemRect = p_option.rect;
-//    int topShift = p_index.row() * itemRect.height();
-//    int shift = 15;
-//    int globalShift = shift;
-
-//    // Save painter
-//    p_painter->save();
-
-//    // Task epic
-//    auto taskEpic = taskItem->GetEpic();
-//    auto taskEpicBoundingRect = fontMetrics.boundingRect(taskEpic);
-//    QRect taskEpicRect = taskEpicBoundingRect;
-//    taskEpicRect.moveLeft(globalShift);
-//    taskEpicRect.moveTop(topShift + (itemRect.height()-taskEpicBoundingRect.height())/2);
-//    QRect taskEpicUnderlineRect = taskEpicRect.marginsAdded(QMargins(5, 5, 5, 5));
-//    taskEpicRect.moveLeft(taskEpicRect.left()+3);
-//    globalShift += taskEpicRect.width() + shift;
-
-//    // Task name
-//    auto taskName = taskItem->GetName();
-//    auto taskNameBoundingRect = fontMetrics.boundingRect(taskName);
-//    QRect taskNameRect = taskNameBoundingRect;
-//    taskNameRect.moveLeft(globalShift);
-//    taskNameRect.moveTop(topShift + (itemRect.height()-taskNameBoundingRect.height())/2);
-
-//    // Draw
-//    p_painter->drawRect(p_option.rect);
-//    p_painter->setBrush(Qt::yellow);
-//    p_painter->setPen(Qt::NoPen);
-//    p_painter->drawRoundedRect(taskEpicUnderlineRect, 5, 5);
-//    p_painter->setBrush(Qt::NoBrush);
-//    p_painter->setPen(Qt::white);
-//    p_painter->drawText(taskEpicRect, taskEpic);
-//    p_painter->setPen(Qt::black);
-//    p_painter->drawText(taskNameRect, taskName);
-
-//    // Restore painter
-//    p_painter->restore();
-//  }
-}
-
 QSize BackLogItemDelegate::sizeHint(const QStyleOptionViewItem& p_option, const QModelIndex& p_index) const {
-  return QSize(QStyledItemDelegate::sizeHint(p_option, p_index).width(), 50);
+  return QSize(QItemDelegate::sizeHint(p_option, p_index).width(), 30);
 }
